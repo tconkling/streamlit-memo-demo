@@ -3,8 +3,6 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
 
-DB_URL = "postgresql://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs"
-
 
 class RNA(Base):
     __tablename__ = "rna"
@@ -18,9 +16,3 @@ class RNA(Base):
     seq_short = Column(String)
     seq_long = Column(Text)
     md5 = Column(String)
-
-
-def create_sessionmaker() -> sessionmaker:
-    """Create a new SQLAlchemy sessionmaker that connects to our DB."""
-    engine = create_engine(DB_URL)
-    return sessionmaker(engine)
