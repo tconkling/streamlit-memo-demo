@@ -1,18 +1,22 @@
-import streamlit as st
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import pandas as pd
+import streamlit as st
 
-from db import RNA
+from db import RNA, create_sessionmaker
 
-DB_URL = "postgresql://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs"
+
+@st.memo
+def get_results(_SessionMaker, row_count: int) -> pd.DataFrame:
+    with _SessionMaker() as session:
+        query = session.query(RNA).limit(row_count)
+        results = pd.read_sql(query.statement, query.session.bind)
+        return results
+
+
+# Get or create our SQLAlchemy singleton
+if "sessionmaker" not in st.session_state:
+    st.session_state.sessionmaker = create_sessionmaker()
 
 st.write("memo demo!")
 
-
-engine = create_engine(DB_URL)
-Session = sessionmaker(engine)
-with Session() as session:
-    query = session.query(RNA).limit(10)
-    results = pd.read_sql(query.statement, query.session.bind)
-    st.write(results)
+results = get_results(st.session_state.sessionmaker, 10)
+st.write(results)
