@@ -54,8 +54,13 @@ with st.beta_expander("Toggle code"):
                 the cache.
             """
             with _sessionmaker() as session:
-                offset = page_size * page
-                query = session.query(RNA).order_by(RNA.id).offset(offset).limit(page_size)
+                query = (
+                    session
+                        .query(RNA.id, RNA.seq_short, RNA.seq_long, RNA.len, RNA.upi)
+                        .order_by(RNA.id)
+                        .offset(page_size * page)
+                        .limit(page_size)
+                )
                 return pd.read_sql(query.statement, query.session.bind)
 
 st.markdown("""
