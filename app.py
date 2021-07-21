@@ -17,6 +17,8 @@ We use `st.session_state` to create a singleton SQLAlchemy engine on our first r
 """)
 with st.echo():
     if "sessionmaker" not in st.session_state:
+        # This is a publicly-accessible read-only database. We wouldn't
+        # normally stick db creds in our code :)
         DB_URL = "postgresql://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs"
         engine = create_engine(DB_URL)
         st.session_state.sessionmaker = sessionmaker(engine)
