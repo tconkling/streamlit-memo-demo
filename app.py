@@ -53,9 +53,15 @@ with st.echo():
 
 st.markdown("""### Results""")
 with st.echo():
+    PAGE_SIZE = 1000
+
     # Prompt for the results page
-    page = int(st.number_input("Select a results page:", min_value=0, value=0, step=1))
+    page = int(st.number_input(
+        f"Select page ({PAGE_SIZE} results/page):", min_value=0)
+    )
 
     # Run the query and show the results
-    results = get_page(st.session_state.sessionmaker, page_size=10, page=page)
+    results = get_page(st.session_state.sessionmaker, page_size=PAGE_SIZE, page=page)
     st.write(results)
+
+    # (It's safe to mutate results - it won't affect the cache.)
