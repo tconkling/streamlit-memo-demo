@@ -9,23 +9,25 @@ st.title("🥒 @st.memo demo")
 
 st.markdown(f"""
 Browse RNA sequences from the public [RNAcentral Postgres database](https://rnacentral.org/help/public-database).
-- `st.session_state` stores a "singleton" SQLAlchemy database connection
+- `@st.singleton` stores a singleton SQLAlchemy database connection
 - The pickle-based `@st.memo` decorator caches query results.
 """)
 
 st.markdown("""
 ### Connecting to the database
-We use `st.session_state` to create a singleton SQLAlchemy engine on our first run.
+We use `@st.singleton` to create a single SQLAlchemy engine that will be shared 
+across all sessions and runs.
 """)
 
-with st.beta_expander("Toggle code"):
+with st.expander("Toggle code"):
     with st.echo():
-        if "sessionmaker" not in st.session_state:
+        @st.singleton
+        def get_db_sessionmaker() -> sessionmaker:
             # This is a publicly-accessible read-only database. We wouldn't
             # normally stick db creds in our code :)
             DB_URL = "postgresql://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs"
             engine = create_engine(DB_URL)
-            st.session_state.sessionmaker = sessionmaker(engine)
+            return sessionmaker(engine)
 
 st.markdown("""
 ### Querying the database
@@ -34,7 +36,7 @@ The `get_page` function queries the database and caches its results. Because
 `_sessionmaker` argument name with "_". 
 """)
 
-with st.beta_expander("Toggle code"):
+with st.expander("Toggle code"):
     with st.echo():
         @st.memo
         def get_page(_sessionmaker, page_size: int, page: int) -> pd.DataFrame:
@@ -70,16 +72,15 @@ already cached will return more quickly, because they don't require a database
 query.
 """)
 
-with st.echo():
-    PAGE_SIZE = 1000
+PAGE_SIZE = 1000
 
-    # Prompt for the results page
-    page = int(st.number_input(
-        f"Select page ({PAGE_SIZE} results/page):", min_value=0)
-    )
+# Prompt for the results page
+page = int(st.number_input(
+    f"Select page ({PAGE_SIZE} results/page):", min_value=0)
+)
 
-    # Run the query and show the results
-    results = get_page(st.session_state.sessionmaker, page_size=PAGE_SIZE, page=page)
-    st.write(results)
+# Run the query and show the results
+results = get_page(get_db_sessionmaker(), page_size=PAGE_SIZE, page=page)
+st.write(results)
 
-    # (It's safe to mutate results - it won't affect the cache.)
+# (It's safe to mutate results - it won't affect the cache.)
