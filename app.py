@@ -5,23 +5,23 @@ from sqlalchemy.orm import sessionmaker
 
 from db import RNA
 
-st.title("🥒 @st.memo demo")
+st.title("🥒 memo + singleton demo")
 
 st.markdown(f"""
 Browse RNA sequences from the public [RNAcentral Postgres database](https://rnacentral.org/help/public-database).
-- `@st.singleton` stores a singleton SQLAlchemy database connection
-- The pickle-based `@st.memo` decorator caches query results.
+- `@st.experimental_singleton` stores a singleton SQLAlchemy database connection
+- The pickle-based `@st.experimental_memo` decorator caches query results.
 """)
 
 st.markdown("""
 ### Connecting to the database
-We use `@st.singleton` to create a single SQLAlchemy engine that will be shared 
+We use `@st.experimental_singleton` to create a single SQLAlchemy engine that will be shared 
 across all sessions and runs.
 """)
 
 with st.expander("Toggle code"):
     with st.echo():
-        @st.singleton
+        @st.experimental_singleton
         def get_db_sessionmaker() -> sessionmaker:
             # This is a publicly-accessible read-only database. We wouldn't
             # normally stick db creds in our code :)
@@ -32,13 +32,13 @@ with st.expander("Toggle code"):
 st.markdown("""
 ### Querying the database
 The `get_page` function queries the database and caches its results. Because
-`@st.memo` cannot hash SQLAlchemy `sessionmaker` objects, we prefix the
+`@st.experimental_memo` cannot hash SQLAlchemy `sessionmaker` objects, we prefix the
 `_sessionmaker` argument name with "_". 
 """)
 
 with st.expander("Toggle code"):
     with st.echo():
-        @st.memo
+        @st.experimental_memo
         def get_page(_sessionmaker, page_size: int, page: int) -> pd.DataFrame:
             """Retrieve rows from the RNA database, and cache them.
 
